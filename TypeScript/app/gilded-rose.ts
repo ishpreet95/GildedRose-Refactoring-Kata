@@ -10,6 +10,52 @@ export class Item {
   }
 }
 
+const handleAgedBrie = (item: Item) => {
+  item.sellIn--;
+  item.quality = Math.min(50, item.quality + 1);
+};
+
+const handleSulfuras = (item: Item) => {};
+
+const handleBackstagePasses = (item: Item) => {
+  const sellIn = item.sellIn;
+
+  if (sellIn < 0) item.quality = 0;
+  else {
+    let incRate = 1;
+    if (sellIn <= 5 && sellIn >= 0) incRate = 3;
+    else if (sellIn <= 10 && sellIn > 5) incRate = 2;
+    item.quality = item.quality + incRate;
+  }
+  item.sellIn--;
+};
+
+const handleConjured = (item: Item) => {
+  let decRate = 1 * 2;
+  if (item.sellIn < 0) decRate = 2 * 2;
+  item.quality = Math.max(0, item.quality - decRate);
+  item.sellIn--;
+};
+const handleOthers = (item: Item) => {
+  let decRate = 1;
+  if (item.sellIn < 0) decRate = 2;
+  item.quality = Math.max(0, item.quality - decRate);
+  item.sellIn--;
+};
+
+const getHandler = (name: string) => {
+  const ifAgedBrie = name.includes("Aged Brie");
+  const ifSulfuras = name.includes("Sulfuras");
+  const ifBackstagePasses = name.includes("Backstage passes");
+  const ifConjured = name.includes("Conjured");
+
+  if (ifAgedBrie) return handleAgedBrie;
+  else if (ifSulfuras) return handleSulfuras;
+  else if (ifBackstagePasses) return handleBackstagePasses;
+  else if (ifConjured) return handleConjured;
+  else return handleOthers;
+};
+
 export class GildedRose {
   items: Array<Item>;
 
@@ -19,51 +65,8 @@ export class GildedRose {
 
   updateQuality() {
     for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
-      }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
-      }
+      getHandler(this.items[i].name)(this.items[i]);
     }
-
     return this.items;
   }
 }
